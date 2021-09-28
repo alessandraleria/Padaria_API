@@ -125,6 +125,43 @@ module.exports = {
         }
     },
 
+    async edit(req, res){
+        const {id, name, last_name, email} = req.body;
+
+        try {
+            const user = await User.findOne({
+                attributes: ['id', 'name', 'last_name', 'email'],
+                where: {
+                    id: id
+                }
+            });
+
+            if(name !== "")
+                user.name = name;
+            
+            if(last_name !== "")
+                user.last_name = last_name
+            
+            if(email !== "")
+                user.email = email;
+            
+            await user.save();
+
+            return res.status(200).json({
+                success: true,
+                name: user.getDataValue('name'),
+                last_name: user.getDataValue('last_name'),
+                email: user.getDataValue('email')
+            });
+        } catch (error) {
+            console.log("Erro: " + error);
+            return res.status(400).json({
+                success: false,
+                message: "Falha ao editar usuário!"
+            });
+        }
+    },
+
     async redefinePassword(req, res){
         const {access_level, name, last_name, email, cpf, password} = req.body;
 
