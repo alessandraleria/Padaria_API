@@ -162,6 +162,32 @@ module.exports = {
         }
     },
 
+    async delete(req, res){
+        const { id } = req.body;
+
+        try {
+            const user = await User.findOne({
+                where: {
+                    id: id,
+                }
+            });
+
+            await user.destroy();
+
+            return res.status(200).json({
+                success: true,
+                message: "Usuário excluído com sucesso!"
+            });
+            
+        } catch (error) {
+            console.log("Erro: " + error);
+            return res.status(400).json({
+                success: false,
+                message: "Falha ao buscar usuário!"
+            });
+        }
+    },
+
     async redefinePassword(req, res){
         const {access_level, name, last_name, email, cpf, password} = req.body;
 
