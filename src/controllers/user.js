@@ -8,6 +8,29 @@ module.exports = {
         return res.json(users);
     },
 
+    async profile(req, res){
+        const { id } = req.body;
+
+        try {
+            const user = await User.findOne({
+                where: {
+                    id: id,
+                }
+            });
+
+            return res.status(200).json({
+                success: true,
+                data: user
+            });
+        } catch (error) {
+            console.log("Erro: " + error);
+            return res.status(400).json({
+                success: false,
+                message: "Falha ao buscar usuário!"
+            });
+        }
+    },
+
     async create(req, res) {
         const { name, last_name, email, cpf } = req.body;
         const hash = bcrypt.hashSync(cpf, 10);
