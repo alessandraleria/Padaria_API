@@ -88,6 +88,7 @@ module.exports = {
             if(count <= 0){
                 return res.json({
                     success: false,
+                    status: 0,
                     message: "E-mail não encontrado! Cadastre-se ou cheque as credenciais de login e tente novamente."
                 });
             } else {
@@ -104,6 +105,7 @@ module.exports = {
                 if (match){
                     return res.status(200).json({
                         success: true,
+                        status: 1,
                         message: "Login realizado com Sucesso!",
                         data: user,
                         id: user.getDataValue('id')
@@ -111,6 +113,7 @@ module.exports = {
                 } else {
                     return res.json({
                         success: false,
+                        status: 2,
                         message: "Senha incorreta!"
                     });
                 }
