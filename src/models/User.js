@@ -8,7 +8,9 @@ class User extends Model {
             last_name: DataTypes.STRING,
             email: DataTypes.STRING,
             password: DataTypes.STRING,
-            cpf: DataTypes.STRING
+            cpf: DataTypes.STRING,
+            phone: DataTypes.STRING,
+            address: DataTypes.STRING
         }, {
             sequelize
         })

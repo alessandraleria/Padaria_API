@@ -3,7 +3,9 @@ const bcrypt = require('bcrypt');
 
 module.exports = {
     async index(req, res){
-        const users = await User.findAll();
+        const users = await User.findAll({
+            attributes: ['cpf', 'name', 'email', 'phone', 'address']
+        });
 
         return res.json(users);
     },
@@ -32,25 +34,27 @@ module.exports = {
     },
 
     async create(req, res) {
-        const { name, last_name, email, cpf } = req.body;
+        const { access_level, name, last_name, email, cpf, phone, address } = req.body;
         const hash = bcrypt.hashSync(cpf, 10);
 
         try {
 
             const count = await User.count({
                 where: {
-                    email: email
+                    cpf: cpf
                 }
             }); 
 
             if(count <= 0){
                 const user = await User.create({
-                    access_level: 2,
+                    access_level,
                     name,
                     last_name,
                     email,
                     password: hash,
-                    cpf
+                    cpf,
+                    phone,
+                    address
                 });
     
                 return res.status(200).json({
@@ -128,14 +132,26 @@ module.exports = {
         }
     },
 
+    async findByCpf(req, res){
+        const { cpf } = req.body;
+        console.log(req.body);
+        const user = await User.findOne({
+            where: {
+                cpf: cpf
+            },
+            attributes: ['id', 'name', 'last_name', 'email', 'phone', 'address']
+        });
+        return res.json(user);
+    },
+
     async edit(req, res){
-        const {id, name, last_name, email} = req.body;
+        const {id, cpf, name, last_name, email, phone, address} = req.body;
 
         try {
             const user = await User.findOne({
-                attributes: ['id', 'name', 'last_name', 'email'],
+                attributes: ['id', 'cpf', 'name', 'last_name', 'email', 'phone', 'address'],
                 where: {
-                    id: id
+                    cpf: cpf
                 }
             });
 
@@ -147,6 +163,12 @@ module.exports = {
             
             if(email !== "")
                 user.email = email;
+
+            if(phone !== "")
+                user.phone = phone;
+            
+            if(address !== "")
+                user.address = address;
             
             await user.save();
 
@@ -166,12 +188,12 @@ module.exports = {
     },
 
     async delete(req, res){
-        const { id } = req.body;
+        const { cpf } = req.body;
 
         try {
             const user = await User.findOne({
                 where: {
-                    id: id,
+                    cpf: cpf,
                 }
             });
 
@@ -192,53 +214,28 @@ module.exports = {
     },
 
     async redefinePassword(req, res){
-        const {access_level, name, last_name, email, cpf, password} = req.body;
+        const {email, cpf} = req.body;
 
         try {
-            if(access_level == 1){
-                const hash = bcrypt.hashSync(password, 10);
+            const hash = bcrypt.hashSync(cpf, 10);
 
-                const user = await User.findOne({
-                    attributes: ['id', 'name', 'last_name', 'email', 'cpf', 'password'],
-                    where: {
-                        email: email,
-                        cpf: cpf
-                    }
-                });
-
-                if(hash !== ""){
-                    user.password = hash;
+            const user = await User.findOne({
+                attributes: ['id', 'name', 'last_name', 'email', 'cpf', 'password'],
+                where: {
+                    email,
+                    cpf
                 }
+            });
 
-                await user.save();
-                return res.status(200).json({
-                    success: true
-                });
-
-            } else {
-                const hash = bcrypt.hashSync(cpf, 10);
-
-                const user = await User.findOne({
-                    attributes: ['id', 'name', 'last_name', 'email', 'cpf', 'password'],
-                    where: {
-                        name, 
-                        last_name,
-                        email,
-                        cpf
-                    }
-                });
-
-                if(hash !== ""){
-                    user.password = hash;
-                }
-
-                await user.save();
-                return res.status(200).json({
-                    success: true,
-                    data: user
-                });
+            if(hash !== ""){
+                user.password = hash;
             }
 
+            await user.save();
+            return res.status(200).json({
+                success: true,
+                data: user
+            });
             
         } catch (error) {
             console.log("Erro: " + error);

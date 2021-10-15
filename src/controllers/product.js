@@ -2,8 +2,22 @@ const Product = require("../models/Product");
 
 module.exports = {
     async index(req, res){
-        const products = await Product.findAll();
+        const products = await Product.findAll({
+            attributes: ['code', 'name', 'current_quantity', 'minimum_quantity', 'status']
+        });
         return res.json(products);
+    },
+
+    async findById(req, res){
+        const { code } = req.body;
+        console.log(code);
+        const product = await Product.findOne({
+            where: {
+                code: code
+            },
+            attributes: ['id','code', 'name', 'current_quantity', 'minimum_quantity', 'status']
+        });
+        return res.json(product);
     },
 
     async create(req, res){
@@ -47,11 +61,11 @@ module.exports = {
     },
 
     async edit(req, res){
-        const {id, code, name, minimum_quantity, status} = req.body;
+        const {id, code, name, minimum_quantity, current_quantity, status} = req.body;
 
         try {
             const product = await Product.findOne({
-                attributes: ['id', 'name', 'minimum_quantity', 'status'],
+                attributes: ['id', 'name', 'minimum_quantity', 'current_quantity', 'status'],
                 where: {
                     id: id
                 }
@@ -62,6 +76,9 @@ module.exports = {
             
             if(minimum_quantity !== "")
                 product.minimum_quantity = minimum_quantity
+
+            if(current_quantity !== "")
+                product.current_quantity = current_quantity
             
             if(status !== "")
                 product.status = status;
