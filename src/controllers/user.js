@@ -214,10 +214,10 @@ module.exports = {
     },
 
     async redefinePassword(req, res){
-        const {email, cpf} = req.body;
+        const {email, cpf, password} = req.body;
 
         try {
-            const hash = bcrypt.hashSync(cpf, 10);
+            const hash = bcrypt.hashSync(password, 10);
 
             const user = await User.findOne({
                 attributes: ['id', 'name', 'last_name', 'email', 'cpf', 'password'],
@@ -227,15 +227,24 @@ module.exports = {
                 }
             });
 
-            if(hash !== ""){
-                user.password = hash;
+            if(user){
+                if(hash !== ""){
+                    user.password = hash;
+                }
+
+                await user.save();
+                return res.status(200).json({
+                    success: true,
+                    data: user
+                });
+            } else {
+                return res.status(200).json({
+                    success: false,
+                    message: "E-mail e CPF não conferem!"
+                });
             }
 
-            await user.save();
-            return res.status(200).json({
-                success: true,
-                data: user
-            });
+            
             
         } catch (error) {
             console.log("Erro: " + error);
